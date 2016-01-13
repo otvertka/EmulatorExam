@@ -11,15 +11,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -29,7 +32,6 @@ public class MainActivity extends AppCompatActivity{
     private static final int FILE_SELECT_CODE = 0;
     Button buttonNew;
     TextView textView;
-    EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +39,6 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.textView);
-        editText = (EditText)findViewById(R.id.editText);
 
         buttonNew = (Button) findViewById(R.id.buttonNew);
         buttonNew.setOnClickListener(new View.OnClickListener() {
@@ -50,8 +51,8 @@ public class MainActivity extends AppCompatActivity{
 
     private void showFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("text/plain");
-       // intent.addCategory(Intent.CATEGORY_OPENABLE);//толком не понял для чего это
+        intent.setType("text/*");
+       // intent.addCategory(Intent.CATEGORY_OPENABLE);//толком не понял для чего это, работает и без него)
 
         try {
             startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"),FILE_SELECT_CODE);
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        String[] toTest;
+
         Log.d("myLogs", "requestCode = " + requestCode + ", resultCode = " + resultCode);
 
         if(requestCode == FILE_SELECT_CODE){
@@ -76,15 +79,21 @@ public class MainActivity extends AppCompatActivity{
                 File sdFile = new File(file);
                 String result = "";
                 try {
-                    BufferedReader br = new BufferedReader(new FileReader(sdFile));
-                    String str = "";
-                    while ((str = br.readLine()) != null) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sdFile), "Windows-1251"));
+                    String str;
+
+                    while ((str = reader.readLine()) != null) {
+                        Log.d("myLogs", "Line - " + str);
+
                         result += str;
                     }
-                    br.close();
+                    reader.close();
                 }  catch (IOException e) {e.printStackTrace();}
-                textView.setText(result);
-                editText.setText(file);
+
+               toTest = result.split("~");
+
+
+                textView.setText(toTest[2]);
             } else Toast.makeText(this, "Файл не выбран.", Toast.LENGTH_SHORT).show();
         }
 
