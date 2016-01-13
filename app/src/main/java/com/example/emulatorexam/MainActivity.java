@@ -1,13 +1,107 @@
 package com.example.emulatorexam;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity{
+
+
+
+
+    private static final int FILE_SELECT_CODE = 0;
+    Button buttonNew;
+    TextView textView;
+    EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        textView = (TextView) findViewById(R.id.textView);
+        editText = (EditText)findViewById(R.id.editText);
+
+        buttonNew = (Button) findViewById(R.id.buttonNew);
+        buttonNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFileChooser();
+            }
+        });
+    }
+
+    private void showFileChooser() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+       // intent.addCategory(Intent.CATEGORY_OPENABLE);//толком не понял для чего это
+
+        try {
+            startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"),FILE_SELECT_CODE);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d("myLogs", "requestCode = " + requestCode + ", resultCode = " + resultCode);
+
+        if(requestCode == FILE_SELECT_CODE){
+
+            if(resultCode == RESULT_OK){
+
+                String file = data.getData().getPath();
+
+                File sdFile = new File(file);
+                String result = "";
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(sdFile));
+                    String str = "";
+                    while ((str = br.readLine()) != null) {
+                        result += str;
+                    }
+                    br.close();
+                }  catch (IOException e) {e.printStackTrace();}
+                textView.setText(result);
+                editText.setText(file);
+            } else Toast.makeText(this, "Файл не выбран.", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
