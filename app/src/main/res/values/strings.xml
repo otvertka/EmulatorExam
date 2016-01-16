@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">EmulatorExam</string>
+    <string name="search_title">Search</string>
+    <string name="menu_item_question">Добавить вопросы</string>
+    <string name="menu_item_answer">Добавить ответы</string>
+    <string name="menu_item_question_answer">Добавить вопросы/ответы</string>
+
+    <string name="view_navigation_open">Open</string>
+    <string name="view_navigation_close">Close</string>
 </resources>
