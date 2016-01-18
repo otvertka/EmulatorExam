@@ -1,5 +1,7 @@
 package com.example.emulatorexam;
 
+import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -9,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;//Loot it also
 import android.widget.ArrayAdapter;//посмотерть подробнее оь этом
 import android.widget.ListView;
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity{
     private ListView listView;
 
     public String questions[] = {"Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg"};
-    public String answers[];
+    public String answers[] = {"Ответ на этот вопрос не добавлен"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,26 +50,23 @@ public class MainActivity extends AppCompatActivity{
         listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
 
         //обработчик для глиста
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-                //Позиция элемента, по которому щелкнули
-                String number = Integer.toString(position);
 
                 Intent intent = new Intent();
-
-                intent.setClass(MainActivity.this, ListActivity.class);
+                intent.setClass(MainActivity.this, AnswerActivity.class);
 
                 Bundle b = new Bundle();
 
-                //defStrID содержит строку, которую отправим через itemname в другое Activity
-                b.putString("position", number);
+                if(answers.length > position) {
+                    b.putString("position", answers[position]);
+                } else {b.putString("position", "Ответ на этот вопрос не добавлен");}
 
                 intent.putExtras(b);
 
-                //запускаем Intent
                 startActivity(intent);
             }
-        });*/
+        });
     }
 
     private void initToolbar() {
