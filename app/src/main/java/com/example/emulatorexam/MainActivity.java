@@ -1,6 +1,5 @@
 package com.example.emulatorexam;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -10,10 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.AdapterView;//Loot it also
 import android.widget.ArrayAdapter;//посмотерть подробнее оь этом
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -32,10 +29,10 @@ public class MainActivity extends AppCompatActivity{
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
+    private ListView listView;
 
-    ListView listView;
-    String questions[] = {"Вы ничего не добавли"};
-    String answers[];
+    public String questions[] = {"Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg"};
+    public String answers[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +44,7 @@ public class MainActivity extends AppCompatActivity{
         initNavigationView();
 
         listView = (ListView)findViewById(R.id.listView);
+        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
 
         //обработчик для глиста
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
