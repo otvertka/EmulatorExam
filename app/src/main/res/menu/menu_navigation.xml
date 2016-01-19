@@ -13,5 +13,9 @@
         android:id="@+id/addQuestionAnswer"
         android:orderInCategory="3"
         android:title="@string/menu_item_question_answer" />
+    <item
+        android:id="@+id/showList"
+        android:orderInCategory="4"
+        android:title="@string/menu_item_showList" />
 
 </menu>

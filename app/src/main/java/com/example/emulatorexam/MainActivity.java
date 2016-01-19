@@ -1,8 +1,7 @@
 package com.example.emulatorexam;
 
-import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -12,30 +11,38 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;//Loot it also
-import android.widget.ArrayAdapter;//посмотерть подробнее оь этом
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 
 public class MainActivity extends AppCompatActivity{
 
+    final String SAVED_TEXT = "saved_text";
     private static final int LAYOUT = R.layout.activity_main;
     private static final int FILE_SELECT_CODE_QUESTION = 1;
     private static final int FILE_SELECT_CODE_ANSWER = 2;
-    private static final int FILE_SELECT_CODE_QUESTION_ANSWER = 3;
+    //private static final int FILE_SELECT_CODE_QUESTION_ANSWER = 3;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ListView listView;
 
+    SharedPreferences sPref;
+    String file;
+
     public String questions[] = {"Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg", "Вы ничего не добавли", "аываываы", "dfgdfgdfgdfghdf", "g", "dfg"};
-    public String answers[] = {"Ответ на этот вопрос не добавлен"};
+    public String answers[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,28 +52,9 @@ public class MainActivity extends AppCompatActivity{
 
         initToolbar();
         initNavigationView();
+        initListView();
 
-        listView = (ListView)findViewById(R.id.listView);
-        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
 
-        //обработчик для глиста
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, AnswerActivity.class);
-
-                Bundle b = new Bundle();
-
-                if(answers.length > position) {
-                    b.putString("position", answers[position]);
-                } else {b.putString("position", "Ответ на этот вопрос не добавлен");}
-
-                intent.putExtras(b);
-
-                startActivity(intent);
-            }
-        });
     }
 
     private void initToolbar() {
@@ -75,11 +63,48 @@ public class MainActivity extends AppCompatActivity{
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+
+                switch (item.getItemId()) {
+                    case R.id.saveList:
+                        saveList(file);
+                        break;
+                    case R.id.search:
+                        loadList();
+                        break;
+                }
                 return false;
             }
+
+
         });
 
         toolbar.inflateMenu(R.menu.menu);
+    }
+
+    private void loadList() {
+
+        String s = "хуй";
+        String p = "пизда";
+
+        sPref = getPreferences(MODE_PRIVATE);
+        s = sPref.getString(SAVED_TEXT, "");
+        Log.d("myLogs", "Кнопка loadList была нажата  " + s  + " " + p);
+        loading(s);
+
+
+    }
+
+    //сохраняет значения путей к файлам (+ создает список этих листов: матем, физика и т.д....)
+    private void saveList(String s) {
+        Log.d("myLogs", "Кнопка сохранить была нажата 1 " + s );
+
+        sPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putString(SAVED_TEXT, s);
+        ed.apply();
+
+        Log.d("myLogs", "Кнопка сохранить была нажата 2" );
+
     }
 
     private void initNavigationView() {
@@ -96,7 +121,7 @@ public class MainActivity extends AppCompatActivity{
             public boolean onNavigationItemSelected(MenuItem item) {
                 String s;
                 drawerLayout.closeDrawers();
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.addQuestion:
                         s = "ВОПРОСАМИ";
                         showFileChooser(s, FILE_SELECT_CODE_QUESTION);
@@ -105,6 +130,7 @@ public class MainActivity extends AppCompatActivity{
                         s = "ОТВЕТАМИ";
                         showFileChooser(s, FILE_SELECT_CODE_ANSWER);
                         break;
+
                 }
 
                 return false;
@@ -112,9 +138,38 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
+    private void initListView() {
+        listView = (ListView)findViewById(R.id.listView);
+        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, AnswerActivity.class);
+
+                Bundle b = new Bundle();
+
+                if (answers == null) {
+                    toast();
+                } else if (answers.length > position) {
+                    b.putString("position", answers[position]);
+                    intent.putExtras(b);
+                    startActivity(intent);
+                } else toast();
+
+
+            }
+        });
+    }
+
+    public void toast(){
+        Toast.makeText(this, "Ответ на этот вопрос не добавлен.", Toast.LENGTH_SHORT).show();
+    }
+
     private void showFileChooser(String s, int code) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("text/*");
+        intent.setType("text/*"); //поработай над этим!!!
        // intent.addCategory(Intent.CATEGORY_OPENABLE);//толком не понял для чего это, работает и без него)
 
         try {
@@ -129,34 +184,16 @@ public class MainActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Log.d("myLogs", "requestCode = " + requestCode + ", resultCode = " + resultCode);
+        //Log.d("myLogs", "requestCode = " + requestCode + ", resultCode = " + resultCode);
 
         if (requestCode == FILE_SELECT_CODE_QUESTION) {
 
             if (resultCode == RESULT_OK) {
 
-                String file = data.getData().getPath();
+                file = data.getData().getPath();
+                loading(file);
 
-                File sdFile = new File(file);
-                String result = "";
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sdFile), "Windows-1251"));
-                    String str;
 
-                    while ((str = reader.readLine()) != null) {
-                        Log.d("myLogs", "Line - " + str);
-
-                        result += str;
-                    }
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                questions = result.split("~");
-
-                listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
-                listView.setTextFilterEnabled(true);
 
             } else Toast.makeText(this, "Файл не выбран.", Toast.LENGTH_SHORT).show();
         } else if (requestCode == FILE_SELECT_CODE_ANSWER) {
@@ -171,7 +208,7 @@ public class MainActivity extends AppCompatActivity{
                     String str;
 
                     while ((str = reader.readLine()) != null) {
-                        Log.d("myLogs", "Line - " + str);
+                        //Log.d("myLogs", "Line - " + str);
 
                         result += str;
                     }
@@ -180,11 +217,36 @@ public class MainActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
 
-                answers = result.split("~");
+                answers = result.split(getString(R.string.spliter));
             }
-
-
         }
+    }
+
+    public void loading(String s){
+
+        Log.d("myLogs", "loading...." + s);
+
+        File sdFile = new File(s);
+        String result = "";
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sdFile), "Windows-1251"));
+            String str;
+
+            while ((str = reader.readLine()) != null) {
+                //Log.d("myLogs", "Line - " + str);
+
+                result += str;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        questions = result.split(getString(R.string.spliter));
+
+        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
+        listView.setTextFilterEnabled(true);
+        Log.d("myLogs", ".....loading");
 
     }
 }
