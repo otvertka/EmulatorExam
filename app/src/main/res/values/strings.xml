@@ -10,5 +10,6 @@
     <string name="view_navigation_close">Close</string>
     <string name="spliter">~</string>
     <string name="save_list">Сохранить</string>
+    <string name="load_list">Загрузить</string>
     <string name="dialog_name">Введите название экзамена</string>
 </resources>

@@ -26,7 +26,7 @@ public class DialogScreen{
 
     public static AlertDialog getDialog(final Activity activity, int ID) {
 
-        LayoutInflater li = LayoutInflater.from(activity);
+        LayoutInflater li = LayoutInflater.from(activity);//getActivity().getLayoutInflater()
         View promptsView = li.inflate(R.layout.name_dialog, null);
 
         final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
@@ -42,8 +42,8 @@ public class DialogScreen{
                         setName(userInput.getText().toString());
                         Log.d("myLogs", "DialogScreen  " + name);
 
-
                         Toast.makeText(activity, "progato suka 1", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
 
                     }
                 });
