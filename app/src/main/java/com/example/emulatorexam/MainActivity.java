@@ -17,25 +17,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("My list exam ")
+            builder.setTitle("Список экзаменов: ")
                     .setAdapter(adapter, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -95,17 +90,15 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.app_name);
         toolbar.inflateMenu(R.menu.menu);
+        toolbar.inflateMenu(R.menu.menu_search);
+        //setSupportActionBar(toolbar);//для поддержки старых версий, вроде как) с этим говном не показываются менюшки выше
+
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
                 switch (item.getItemId()) {
                     case R.id.saveList:
-                        saveList();
-                        break;
-                    case R.id.loadList:
-                        break;
-                    case R.id.search:
                         showDialog();
                         break;
                 }
@@ -187,13 +180,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
         }
     } // работа.
-
-    public void saveList(){
-        sPref = getSharedPreferences(SAVED_EXAM, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sPref.edit();
-        editor.putString("fullExam", result);
-        editor.apply();
-    }
 
     public void saveList(String nameExam){
         sPref = getSharedPreferences(SAVED_EXAM, Context.MODE_PRIVATE);
@@ -334,66 +320,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void toast() {
         Toast.makeText(this, "Ответ на этот вопрос не добавлен.", Toast.LENGTH_SHORT).show();
-    }
-
-    public void saveListOld() {
-        /*Log.d("myLogs", "MainActivity  " + fileName);
-            AlertDialog dialog = DialogScreen.getDialog(this, DialogScreen.IDD_INPUT_NAME);
-            assert dialog != null;
-            dialog.show();
-            fileName = DialogScreen.getName();*/
-        Log.d("myLogs", "Вход в saveList  ");
-        LayoutInflater li = LayoutInflater.from(this);
-        View promptsView = li.inflate(R.layout.name_dialog, null);
-        final EditText userInput = (EditText) promptsView.findViewById(R.id.editTextDialogUserInput);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setView(promptsView);
-        builder.setCancelable(false);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-
-                String fileName = userInput.getText().toString();//дучше перенсти это говнго в трай и в дальнейше сделать через сеттер!
-                try {
-                    Log.d("myLogs", "Я вошел в ебаный TRY! fileName = " + fileName);
-
-                    File file = new File(fileName);
-                    String pizda = file.getCanonicalPath();
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(openFileOutput(fileName, MODE_PRIVATE)));
-                    //BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-
-                    Log.d("myLogs", "Абсолютный путь к фалу file: " + pizda);
-                    Log.d("myLogs", "Это ГОВНО пока не сохранилось сохранилось! )");
-
-            /*for (int i = 0; i < answers.length; i++){
-                writer.write(questions[i] + "/");
-                writer.write(answers[i] + "\n");
-            }*/
-                    writer.write("I HATE ebanuh suk");
-                    writer.close();
-                    Log.d("myLogs", "Это ГОВНО сохранилось! )");
-
-                } catch (IOException e) {
-                    Log.d("myLogs", "Это все изза меня!!!  СATCH");
-                    e.printStackTrace();
-                }
-                //Log.d("myLogs", "Кнопка сохранить была нажата 1 " + s);
-                sPref = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor ed = sPref.edit();
-                ed.putString(SAVED_EXAM, "/" + fileName);
-                ed.apply();
-                Log.d("myLogs", "Кнопка сохранить была нажата 2");
-            }
-        });
-
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-
-        AlertDialog alert = builder.create();
-        alert.show();
     }
 
     public void showDialog(){

@@ -12,4 +12,6 @@
     <string name="save_list">Сохранить</string>
     <string name="load_list">Загрузить</string>
     <string name="dialog_name">Введите название экзамена</string>
+
+    <string name="search_hint">Поиск вопроса</string>
 </resources>

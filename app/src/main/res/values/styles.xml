@@ -1,14 +1,27 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
-    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Base application theme. -->
+        <!--<item name="colorPrimaryDark">@color/status_bar_orange</item>-->
+        <item name="searchViewStyle">@style/AppSearchViewStyle</item>
+    </style>
+
     <style name="AppDefault" parent="AppTheme">
         <!-- Customize your theme here. -->
+        <item name="searchIcon">@mipmap/ic_search_black_18dp</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorControlNormal">@color/colorWhite</item>
 
+    </style>
+
+    <!-- Меняем имена стиля. -->
+
+    <style name="AppSearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="queryBackground">@android:color/transparent</item>
+        <item name="searchIcon">@mipmap/ic_search_black_18dp</item>
+        <item name="android:imeActionId">6</item>
     </style>
 
 </resources>
