@@ -1,6 +1,7 @@
 package com.example.emulatorexam;
 
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,12 +12,16 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -34,6 +39,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "myLogs";
     final String SAVED_EXAM = "saved_exam";
     private static final int LAYOUT = R.layout.activity_main;
     private static final int FILE_SELECT_CODE_QUESTION = 1;
@@ -51,11 +57,18 @@ public class MainActivity extends AppCompatActivity {
     public ArrayList<String> examNameList = new ArrayList<>();
     ListAdapter adapter;
 
-    public boolean choice = false;//если тру, то тогда в строке "result" заложены и ответы и вопросы
-    public String questions[];
-    public String answers[];
+    public boolean choiceQA = false;
+    public boolean choiceA = false;
+    public boolean choiceQ = false;//если тру, то тогда в строке "result" заложены и ответы и вопросы
+    public String[] questions;
+    public String[] answers;
+    public ArrayList<String> answerArray = new ArrayList<>();
 
-    @Override
+
+    private SearchView searchView = null;
+    private SearchView.OnQueryTextListener queryTextListener;
+
+
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
@@ -65,7 +78,92 @@ public class MainActivity extends AppCompatActivity {
         initToolbar();
         initNavigationView();
         initListView();
+    }
 
+    private void initToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.app_name);
+        //toolbar.inflateMenu(R.menu.menu);
+        setSupportActionBar(toolbar);//для поддержки старых версий, вроде как) с этим говном не показываются менюшки выше
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                switch (item.getItemId()) {
+                    case R.id.saveList:
+                        showDialog();
+                        break;
+                }
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        SearchManager searchManager = (SearchManager) this.getSystemService(Context.SEARCH_SERVICE);
+
+        if(searchItem != null){
+            searchView = (SearchView) searchItem.getActionView();//MenuItemCompat.getActionView(searchItem);
+        }
+        if(searchView != null){
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(this.getComponentName()));
+
+            queryTextListener = new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    Log.d("myLogs", query + " Отправлено");
+
+                    pleaseSearchIt(query);
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    Log.d("myLogs", newText);
+
+                    pleaseSearchIt(newText);
+
+                    return true;
+                }
+            };
+            searchView.setOnQueryTextListener(queryTextListener);
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public void pleaseSearchIt(String searchText){
+        ArrayList<String> outputArrayQuestions = new ArrayList<>();
+        int k = 0;
+
+        for (int i = 0; i < questions.length; i++) {
+            if(questions[i].contains(searchText))
+            {
+                outputArrayQuestions.add(questions[i]);
+                answerArray.add(k, answers[i]);
+                k++;
+            }
+        }
+        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, outputArrayQuestions));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                // Not implemented here
+                return false;
+            default:
+                break;
+        }
+        searchView.setOnQueryTextListener(queryTextListener);
+        return super.onOptionsItemSelected(item);
     }
 
     public class ListDialog extends DialogFragment{
@@ -84,27 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     });
             return builder.create();
         }
-    }
 
-    private void initToolbar() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.app_name);
-        toolbar.inflateMenu(R.menu.menu);
-        toolbar.inflateMenu(R.menu.menu_search);
-        //setSupportActionBar(toolbar);//для поддержки старых версий, вроде как) с этим говном не показываются менюшки выше
-
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                switch (item.getItemId()) {
-                    case R.id.saveList:
-                        showDialog();
-                        break;
-                }
-                return false;
-            }
-        });
     }
 
     private void initNavigationView() {
@@ -137,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.showList:
                         ListDialog listDialog = new ListDialog();
                         listDialog.show(getSupportFragmentManager(), "My List Dialog");
-                        Log.d("myLogs", "showList прожат  ");
+                        Log.d(TAG, "showList прожат  ");
                         break;
                 }
                 return false;
@@ -147,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initListView() {
         listView = (ListView) findViewById(R.id.listView);
-        //listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> a, View v, int position, long id) {
@@ -157,13 +234,21 @@ public class MainActivity extends AppCompatActivity {
 
                 Bundle b = new Bundle();
 
-                if (answers == null) {
+                /*if (answers == null) {
                     toast();
                 } else if (answers.length > position) {
                     b.putString("position", answers[position]);
                     intent.putExtras(b);
                     startActivity(intent);
-                } else toast();
+                } else toast();*/ //было раньше со статичным массивом
+
+                if(answerArray == null){
+                    toast();
+                } else if(answerArray.size() > position){
+                    b.putString("position", answerArray.get(position));
+                    intent.putExtras(b);
+                    startActivity(intent);
+                }
             }
         });
     } // разобраться с адаптером!
@@ -182,19 +267,30 @@ public class MainActivity extends AppCompatActivity {
     } // работа.
 
     public void saveList(String nameExam){
+
         sPref = getSharedPreferences(SAVED_EXAM, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sPref.edit();
         String resultTwo = "";
-        if (!choice){
+        if(choiceQA){
+            editor.putString(nameExam, result);
+            editor.apply();
+            saveName(nameExam);
+        }
+        else if (choiceA && choiceQ) {
             for (int i = 0; i < questions.length; i++) {
                 resultTwo += questions[i] + "/" + answers[i] + " ~";
-                editor.putString(nameExam, resultTwo);
             }
-        } else {
-        editor.putString(nameExam, result);
+            editor.putString(nameExam, resultTwo);
+            editor.apply();
+            saveName(nameExam);
         }
-        editor.apply();
-        saveName(nameExam);
+        else if (!choiceA && !choiceQ){
+            Toast.makeText(this, "Для сохранения добавьте вопросы и ответы", Toast.LENGTH_SHORT).show();
+        }
+        else if (choiceQ){
+            Toast.makeText(this, "Для сохранения добавьте ответы", Toast.LENGTH_SHORT).show();
+        }
+        else Toast.makeText(this, "Для сохранения добавьте вопросы", Toast.LENGTH_SHORT).show();
     }
 
     private void saveName(String nameExam){
@@ -222,16 +318,22 @@ public class MainActivity extends AppCompatActivity {
         String s = sPref.getString(nameExam, "");
 
         /*****************Этот код уже есть */
-        String together[] = s.split(getString(R.string.spliter));
-        String q[] = new String[together.length];
-        String a[] = new String[together.length];
+        String together[] = s.toLowerCase().split(getString(R.string.spliter));
+        /*q = null;
+        a = null;
+        q = new String[together.length];
+        a = new String[together.length];*/
+        answers = null;
+        questions = null;
+        answers = new String[together.length];
+        questions = new String[together.length];
         for (int i = 0; i < together.length; i++) {
             String togetherString[] = together[i].split("/");
-            q[i] = togetherString[0];
-            a[i] = togetherString[1];
+            questions[i] = togetherString[0];
+            answers[i] = togetherString[1];
+            answerArray.add(togetherString[1]);
         }
-        answers = a;
-        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, q));
+        listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
     }
 
     private void loadNamesExam(){
@@ -254,11 +356,14 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == FILE_SELECT_CODE_QUESTION) {
             if (resultCode == RESULT_OK) {
-                choice = false;
+                //choiceQ = true;
+                //choiceQA = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
 
+                questions = null;
+                listView.setAdapter(null);
                 questions = result.split(getString(R.string.spliter));
                 listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
                 listView.setTextFilterEnabled(true);//не понял для чего именно этот фильтер..
@@ -268,33 +373,43 @@ public class MainActivity extends AppCompatActivity {
 
         else if (requestCode == FILE_SELECT_CODE_ANSWER) {
             if (resultCode == RESULT_OK) {
-                choice = false;
+                //choiceA = true;
+                //choiceQA = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
 
+                answers = null;
                 answers = result.split(getString(R.string.spliter));
+                //answerArray.clear();
+                for (int i = 0; i < answers.length; i++) {
+                    answerArray.add(answers[i]);
+                }
             } else
                 Toast.makeText(this, "Файл с ответами не выбран.", Toast.LENGTH_SHORT).show();
         }
 
         else if (requestCode == FILE_SELECT_CODE_QUESTION_ANSWER) {
             if (resultCode == RESULT_OK) {
-                choice = true;
+                //choiceQA = true;
+               // choiceA = false;
+                //choiceQ = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
 
                 String together[] = result.split(getString(R.string.spliter));
-                String q[] = new String[together.length];
-                String a[] = new String[together.length];
+                answers = null;
+                questions = null;
+                answers = new String[together.length];
+                questions = new String[together.length];
                 for (int i = 0; i < together.length; i++) {
                     String togetherString[] = together[i].split("/");
-                    q[i] = togetherString[0];
-                    a[i] = togetherString[1];
+                    questions[i] = togetherString[0];
+                    answers[i] = togetherString[1];
+                    answerArray.add(togetherString[1]);
                 }
-                answers = a;
-                listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, q));
+                listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
             } else
                 Toast.makeText(this, "Файл с вопросами и ответами  не выбран.", Toast.LENGTH_SHORT).show();
         }
@@ -302,6 +417,7 @@ public class MainActivity extends AppCompatActivity {
 
     public String loadingIntoString(String s) {
 
+        result = "";
         File sdFile = new File(s);
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sdFile), "Windows-1251"));
@@ -315,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Невозможно прочитать данный файл!", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-        return result;
+        return result.toLowerCase();
     }
 
     public void toast() {
@@ -328,18 +444,3 @@ public class MainActivity extends AppCompatActivity {
         myDialog.show(manager, "My Dialog");
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
