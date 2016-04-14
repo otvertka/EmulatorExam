@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,15 +53,16 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
 
     SharedPreferences sPref;
+    SharedPreferences sPrefName;
 
     String result = "";
 
     public ArrayList<String> examNameList = new ArrayList<>();
     ListAdapter adapter;
 
-    public boolean choiceQA = false;
+    public boolean choiceQA = false;//если тру, то тогда в строке "result" заложены и ответы и вопросы
     public boolean choiceA = false;
-    public boolean choiceQ = false;//если тру, то тогда в строке "result" заложены и ответы и вопросы
+    public boolean choiceQ = false;
     public String[] questions;
     public String[] answers;
     public ArrayList<String> answerArray = new ArrayList<>();
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             queryTextListener = new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    Log.d("myLogs", query + " Отправлено");
+                    //Log.d("myLogs", query + " Отправлено");
 
                     pleaseSearchIt(query);
                     return true;
@@ -170,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
+             Log.d(TAG, "List DIALOG!  ");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Список экзаменов: ")
@@ -177,12 +181,59 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             loadList((examNameList.get(which)));
-                            Log.d("myLogs", "List adapter  " + which);
+                            // Log.d(TAG, "List adapter  " + which);
                         }
                     });
-            return builder.create();
+            Log.d(TAG, "ALERTDialog!  ");
+
+            final AlertDialog ad = builder.create();
+            Log.d(TAG, "ALERTDialog!  2.1");
+
+            ad.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialog) {
+                    Log.d(TAG, "ALERTDialog!  2.2(");
+
+                    ListView lv = ad.getListView();
+                    Log.d(TAG, "ALERTDialog!  2.3 " );
+
+                    lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                        @Override
+                        public boolean onItemLongClick(final AdapterView<?> parent, final View view, final int position, long id) {
+                            final AlertDialog.Builder builderTwo = new AlertDialog.Builder(MainActivity.this);
+                            builderTwo.setTitle("Do you want to delete?");
+                            builderTwo.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    examNameList.remove(position);
+                                    ad.cancel();
+                                    Toast.makeText(MainActivity.this,  " is Deleted.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            builderTwo.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Toast.makeText(MainActivity.this, "Item is not Deleted.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            Log.d(TAG, "ALERTDialog!  3");
+
+                            AlertDialog dialog = builderTwo.create();
+                            dialog.show();
+                            //Log.d(TAG, "List Item # " + position + "was long clicked");
+                            return true;
+                        }
+                    });
+                }
+            });
+            return ad;
         }
 
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+        }
     }
 
     private void initNavigationView() {
@@ -215,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.showList:
                         ListDialog listDialog = new ListDialog();
                         listDialog.show(getSupportFragmentManager(), "My List Dialog");
-                        Log.d(TAG, "showList прожат  ");
                         break;
                 }
                 return false;
@@ -297,8 +347,8 @@ public class MainActivity extends AppCompatActivity {
 
         examNameList.add(nameExam);
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sp.edit();
+        sPrefName = getSharedPreferences("saved_name", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sPrefName.edit();
         editor.putInt("Status_size", examNameList.size());
 
         for (int i = 0; i < examNameList.size(); i++) {
@@ -319,10 +369,9 @@ public class MainActivity extends AppCompatActivity {
 
         /*****************Этот код уже есть */
         String together[] = s.toLowerCase().split(getString(R.string.spliter));
-        /*q = null;
-        a = null;
-        q = new String[together.length];
-        a = new String[together.length];*/
+        if (answerArray != null){
+            answerArray.clear();
+        }
         answers = null;
         questions = null;
         answers = new String[together.length];
@@ -337,13 +386,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadNamesExam(){
-        SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
+        //SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sPref = getSharedPreferences("saved_name", Context.MODE_PRIVATE);
+        //SharedPreferences.Editor editor = sPref.edit();
+
         examNameList.clear();
-        int size = mSharedPreference1.getInt("Status_size", 0);
+
+        int size = sPref.getInt("Status_size", 0);
 
         for(int i=0;i<size;i++)
         {
-            examNameList.add(mSharedPreference1.getString("Status_" + i, null));
+            examNameList.add(sPref.getString("Status_" + i, null));
         }
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, examNameList);
@@ -356,8 +409,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == FILE_SELECT_CODE_QUESTION) {
             if (resultCode == RESULT_OK) {
-                //choiceQ = true;
-                //choiceQA = false;
+                choiceQ = true;
+                choiceQA = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
@@ -373,27 +426,34 @@ public class MainActivity extends AppCompatActivity {
 
         else if (requestCode == FILE_SELECT_CODE_ANSWER) {
             if (resultCode == RESULT_OK) {
-                //choiceA = true;
-                //choiceQA = false;
+                choiceA = true;
+                choiceQA = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
 
                 answers = null;
                 answers = result.split(getString(R.string.spliter));
-                //answerArray.clear();
+
+                if (answerArray != null){
+                    answerArray.clear();
+                }
+/*
+                было
                 for (int i = 0; i < answers.length; i++) {
                     answerArray.add(answers[i]);
                 }
+*/
+                Collections.addAll(answerArray, answers);// стало
             } else
                 Toast.makeText(this, "Файл с ответами не выбран.", Toast.LENGTH_SHORT).show();
         }
 
         else if (requestCode == FILE_SELECT_CODE_QUESTION_ANSWER) {
             if (resultCode == RESULT_OK) {
-                //choiceQA = true;
-               // choiceA = false;
-                //choiceQ = false;
+                choiceQA = true;
+                choiceA = false;
+                choiceQ = false;
                 String result, file;
                 file = data.getData().getPath();
                 result = loadingIntoString(file);
@@ -401,6 +461,9 @@ public class MainActivity extends AppCompatActivity {
                 String together[] = result.split(getString(R.string.spliter));
                 answers = null;
                 questions = null;
+                if (answerArray != null){
+                    answerArray.clear();
+                }
                 answers = new String[together.length];
                 questions = new String[together.length];
                 for (int i = 0; i < together.length; i++) {
