@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-             Log.d(TAG, "List DIALOG!  ");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Список экзаменов: ")
@@ -181,21 +180,15 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             loadList((examNameList.get(which)));
-                            // Log.d(TAG, "List adapter  " + which);
                         }
                     });
-            Log.d(TAG, "ALERTDialog!  ");
 
             final AlertDialog ad = builder.create();
-            Log.d(TAG, "ALERTDialog!  2.1");
-
             ad.setOnShowListener(new DialogInterface.OnShowListener() {
                 @Override
                 public void onShow(DialogInterface dialog) {
-                    Log.d(TAG, "ALERTDialog!  2.2(");
 
                     ListView lv = ad.getListView();
-                    Log.d(TAG, "ALERTDialog!  2.3 " );
 
                     lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                         @Override
@@ -205,9 +198,10 @@ public class MainActivity extends AppCompatActivity {
                             builderTwo.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    String s = examNameList.get(position);
                                     examNameList.remove(position);
                                     ad.cancel();
-                                    Toast.makeText(MainActivity.this,  " is Deleted.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, s + " is Deleted.", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             builderTwo.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -217,11 +211,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
 
-                            Log.d(TAG, "ALERTDialog!  3");
-
                             AlertDialog dialog = builderTwo.create();
                             dialog.show();
-                            //Log.d(TAG, "List Item # " + position + "was long clicked");
                             return true;
                         }
                     });
@@ -386,9 +377,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadNamesExam(){
-        //SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences sPref = getSharedPreferences("saved_name", Context.MODE_PRIVATE);
-        //SharedPreferences.Editor editor = sPref.edit();
 
         examNameList.clear();
 
