@@ -7,12 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -22,7 +20,6 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "myLogs";
     final String SAVED_EXAM = "saved_exam";
+    final String SAVED_NAME = "saved_name";
     private static final int LAYOUT = R.layout.activity_main;
     private static final int FILE_SELECT_CODE_QUESTION = 1;
     private static final int FILE_SELECT_CODE_ANSWER = 2;
@@ -52,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ListView listView;
 
-    SharedPreferences sPref;
+    public SharedPreferences sPref;
+    public SharedPreferences sPrefName;
 
     String result = "";
 
@@ -127,8 +126,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    Log.d("myLogs", newText);
-
                     pleaseSearchIt(newText);
 
                     return true;
@@ -197,16 +194,18 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
-                                    String s = examNameList.get(position);
-                                    sPref = getSharedPreferences(SAVED_EXAM, Context.MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = sPref.edit();
-                                    SharedPreferences.Editor editorTwo = getSharedPreferences("saved_name", Context.MODE_PRIVATE).edit();
-                                    editorTwo.remove("status_" + position);
-                                    editor.remove(adapter.getItem(position).toString());
+                                    examNameList.remove(position);
+
+                                    sPrefName = getSharedPreferences(SAVED_NAME, Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sPrefName.edit();
+                                    editor.putInt("Status_size", examNameList.size());
+                                    for (int i = 0; i < examNameList.size(); i++) {
+                                        editor.remove("Status_" + i);
+                                        editor.putString("Status_" + i, examNameList.get(i));
+                                    }
                                     editor.apply();
-                                    loadNamesExam();
+
                                     ad.cancel();
-                                    Toast.makeText(MainActivity.this, s + " is Deleted.", Toast.LENGTH_SHORT).show();
                                 }
                             });
                             builderTwo.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -218,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
 
                             AlertDialog dialog = builderTwo.create();
                             dialog.show();
-                            //Log.d(TAG, "List Item # " + position + "was long clicked");
                             return true;
                         }
                     });
@@ -289,9 +287,9 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 } else toast();*/ //было раньше со статичным массивом
 
-                if(answerArray == null){
+                if (answerArray == null) {
                     toast();
-                } else if(answerArray.size() > position){
+                } else if (answerArray.size() > position) {
                     b.putString("position", answerArray.get(position));
                     intent.putExtras(b);
                     startActivity(intent);
@@ -340,15 +338,12 @@ public class MainActivity extends AppCompatActivity {
         else Toast.makeText(this, "Для сохранения добавьте вопросы", Toast.LENGTH_SHORT).show();
     }
 
-    private void saveName(String nameExam){
+    private void saveName(String nameExam) {
 
         examNameList.add(nameExam);
 
-       // SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        //SharedPreferences.Editor editor = sp.edit();
-
-        sPref = getSharedPreferences("saved_name", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sPref.edit();
+        sPrefName = getSharedPreferences(SAVED_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sPrefName.edit();
         editor.putInt("Status_size", examNameList.size());
 
         for (int i = 0; i < examNameList.size(); i++) {
@@ -386,13 +381,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadNamesExam(){
-        SharedPreferences mSharedPreference1 = PreferenceManager.getDefaultSharedPreferences(this);
+
+        sPrefName = getSharedPreferences(SAVED_NAME, Context.MODE_PRIVATE);
+
         examNameList.clear();
-        int size = mSharedPreference1.getInt("Status_size", 0);
+
+        int size = sPrefName.getInt("Status_size", 0);
 
         for(int i=0;i<size;i++)
         {
-            examNameList.add(mSharedPreference1.getString("Status_" + i, null));
+            examNameList.add(sPrefName.getString("Status_" + i, null));
         }
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, examNameList);
