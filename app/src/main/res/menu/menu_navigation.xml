@@ -17,5 +17,9 @@
         android:id="@+id/showList"
         android:orderInCategory="4"
         android:title="@string/menu_item_showList" />
+    <item
+        android:id="@+id/settings"
+        android:orderInCategory="5"
+        android:title="@string/menu_item_settings" />
 
 </menu>

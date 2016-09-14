@@ -62,7 +62,7 @@ public class AnswerActivity extends AppCompatActivity implements View.OnTouchLis
             }
         });*/
 
-        tv.setOnTouchListener(this);
+        //tv.setOnTouchListener(this);
     }
 
     @Override

@@ -38,7 +38,7 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "myLogs";
+    public static final String TAG = "myLogs";
     final String SAVED_EXAM = "saved_exam";
     final String SAVED_NAME = "saved_name";
     private static final int LAYOUT = R.layout.activity_main;
@@ -46,12 +46,17 @@ public class MainActivity extends AppCompatActivity {
     private static final int FILE_SELECT_CODE_ANSWER = 2;
     private static final int FILE_SELECT_CODE_QUESTION_ANSWER = 3;
 
+    public static final String APP_PREFERENCES = "mySettings";
+    public static final String APP_PREFERENCES_SIZE = "size";
+    private int mSize;
+
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ListView listView;
 
-    public SharedPreferences sPref;
-    public SharedPreferences sPrefName;
+    private SharedPreferences sPref;
+    private SharedPreferences sPrefName;
+    private SharedPreferences mSettings;
 
     String result = "";
 
@@ -75,14 +80,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(LAYOUT);
 
+        mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+
         loadNamesExam();
         initToolbar();
         initNavigationView();
         initListView();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putInt(APP_PREFERENCES_SIZE, mSize);
+        editor.apply();
+    }
+
     private void initToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        assert toolbar != null;
         toolbar.setTitle(R.string.app_name);
         //toolbar.inflateMenu(R.menu.menu);
         setSupportActionBar(toolbar);//для поддержки старых версий, вроде как) с этим говном не показываются менюшки выше
@@ -240,32 +256,39 @@ public class MainActivity extends AppCompatActivity {
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                String s;
-                drawerLayout.closeDrawers();
-                switch (item.getItemId()) {
-                    case R.id.addQuestion:
-                        s = "ВОПРОСАМИ";
-                        showFileChooser(s, FILE_SELECT_CODE_QUESTION);
-                        break;
-                    case R.id.addAnswer:
-                        s = "ОТВЕТАМИ";
-                        showFileChooser(s, FILE_SELECT_CODE_ANSWER);
-                        break;
-                    case R.id.addQuestionAnswer:
-                        s = "Вопросами и Ответами!";
-                        showFileChooser(s, FILE_SELECT_CODE_QUESTION_ANSWER);
-                        break;
-                    case R.id.showList:
-                        ListDialog listDialog = new ListDialog();
-                        listDialog.show(getSupportFragmentManager(), "My List Dialog");
-                        break;
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(MenuItem item) {
+                    String s;
+                    drawerLayout.closeDrawers();
+                    switch (item.getItemId()) {
+                        case R.id.addQuestion:
+                            s = "ВОПРОСАМИ";
+                            showFileChooser(s, FILE_SELECT_CODE_QUESTION);
+                            break;
+                        case R.id.addAnswer:
+                            s = "ОТВЕТАМИ";
+                            showFileChooser(s, FILE_SELECT_CODE_ANSWER);
+                            break;
+                        case R.id.addQuestionAnswer:
+                            s = "Вопросами и Ответами!";
+                            showFileChooser(s, FILE_SELECT_CODE_QUESTION_ANSWER);
+                            break;
+                        case R.id.showList:
+                            ListDialog listDialog = new ListDialog();
+                            listDialog.show(getSupportFragmentManager(), "My List Dialog");
+                            break;
+                        case R.id.settings:
+                            Intent intent = new Intent();
+                            intent.setClass(MainActivity.this, SettingsActivity.class);
+                            startActivity(intent);
+                            break;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+        }
     }
 
     private void initListView() {
@@ -383,9 +406,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadNamesExam(){
 
         sPrefName = getSharedPreferences(SAVED_NAME, Context.MODE_PRIVATE);
-
         examNameList.clear();
-
         int size = sPrefName.getInt("Status_size", 0);
 
         for(int i=0;i<size;i++)
