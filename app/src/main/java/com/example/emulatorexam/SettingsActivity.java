@@ -11,8 +11,6 @@ import android.widget.NumberPicker;
 
 public class SettingsActivity extends Activity {
 
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

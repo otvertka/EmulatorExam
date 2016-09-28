@@ -13,8 +13,7 @@ public class SearchableActivity extends ListActivity{
 
         Intent intent = getIntent();
         if(Intent.ACTION_SEARCH.equals(intent.getAction())){
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            //doMySearch(query);
+           intent.getStringExtra(SearchManager.QUERY);
         }
     }
 }

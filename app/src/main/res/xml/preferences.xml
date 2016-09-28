@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
+    <!--<CheckBoxPreference
     android:key="pref_sync"
     android:title="title"
     android:summary="summary"
-    android:defaultValue="true" />
-    <ListPreference
-        android:dependency="pref_sync"
-        android:key="pref_syncConnectionType"
-        android:title="title_list_preferences" />
+    android:defaultValue="true" />-->
 
-    <Preference android:title="kinopoisk">
+    <ListPreference
+        android:key="list"
+        android:title="Шрифт"
+        android:entries="@array/entries"
+        android:entryValues="@array/entry_values"
+        />
+
+   <!-- <Preference android:title="kinopoisk">
         <intent android:action="android.intent.action.VIEW"
-            android:data="http://www.kinopoisk.ru/"/>
-    </Preference>
+            android:data="http://www.kinopoisk.ru/"
+            />
+    </Preference>-->
 </PreferenceScreen>

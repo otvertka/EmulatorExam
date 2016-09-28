@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String APP_PREFERENCES = "mySettings";
     public static final String APP_PREFERENCES_SIZE = "size";
-    private int mSize;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences sPref;
     private SharedPreferences sPrefName;
-    private SharedPreferences mSettings;
 
     String result = "";
 
@@ -66,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean choiceQA = false;//если тру, то тогда в строке "result" заложены и ответы и вопросы
     public boolean choiceA = false;
     public boolean choiceQ = false;
+    public boolean save = true; //сохранен ли экзамен
     public String[] questions;
     public String[] answers;
     public ArrayList<String> answerArray = new ArrayList<>();
@@ -80,20 +79,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(LAYOUT);
 
-        mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
-
         loadNamesExam();
         initToolbar();
         initNavigationView();
         initListView();
-    }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        SharedPreferences.Editor editor = mSettings.edit();
-        editor.putInt(APP_PREFERENCES_SIZE, mSize);
-        editor.apply();
     }
 
     private void initToolbar() {
@@ -148,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             searchView.setOnQueryTextListener(queryTextListener);
-        }
+        } else  Toast.makeText(this, "Ответ на этот вопрос не добавлен.", Toast.LENGTH_SHORT).show();
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -163,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 answerArray.add(k, answers[i]);
                 k++;
             }
+
         }
         listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, outputArrayQuestions));
     }
@@ -192,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             loadList((examNameList.get(which)));
-                           // Log.d(TAG, "List adapter  " + which);
                         }
                     });
 
@@ -231,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
 
-                            AlertDialog dialog = builderTwo.create();
+                            AlertDialog dialog = builderTwo.create();//проверить для чего это
                             dialog.show();
                             return true;
                         }
@@ -302,14 +292,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Bundle b = new Bundle();
 
-                /*if (answers == null) {
-                    toast();
-                } else if (answers.length > position) {
-                    b.putString("position", answers[position]);
-                    intent.putExtras(b);
-                    startActivity(intent);
-                } else toast();*/ //было раньше со статичным массивом
-
                 if (answerArray == null) {
                     toast();
                 } else if (answerArray.size() > position) {
@@ -351,6 +333,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(nameExam, resultTwo);
             editor.apply();
             saveName(nameExam);
+            save = true;
         }
         else if (!choiceA && !choiceQ){
             Toast.makeText(this, "Для сохранения добавьте вопросы и ответы", Toast.LENGTH_SHORT).show();
@@ -415,7 +398,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, examNameList);
-
     }
 
     @Override
@@ -460,6 +442,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 */
                 Collections.addAll(answerArray, answers);// стало
+                save = false;
             } else
                 Toast.makeText(this, "Файл с ответами не выбран.", Toast.LENGTH_SHORT).show();
         }
@@ -488,6 +471,7 @@ public class MainActivity extends AppCompatActivity {
                     answerArray.add(togetherString[1]);
                 }
                 listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, questions));
+                save = false;
             } else
                 Toast.makeText(this, "Файл с вопросами и ответами  не выбран.", Toast.LENGTH_SHORT).show();
         }

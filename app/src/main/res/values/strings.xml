@@ -16,6 +16,18 @@
     <string name="search_hint">Поиск вопроса</string>
     <string name="title_activity_settings">Settings</string>
 
+    <string-array name="entries">
+        <item>Маленький</item>
+        <item>Средний</item>
+        <item>Большой</item>
+        <item>Огромный</item>
+    </string-array>
+    <string-array name="entry_values">
+        <item>12</item>
+        <item>24</item>
+        <item>36</item>
+        <item>48</item>
+    </string-array>
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
